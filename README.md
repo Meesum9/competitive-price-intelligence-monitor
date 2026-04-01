@@ -1,0 +1,1 @@
+# competitive-price-intelligence-monitor
