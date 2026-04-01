@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Price Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border-bottom: 1px solid #eee; padding: 10px 8px; text-align: left; }
+      .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+      .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; }
+      a { color: #0b5fff; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <h1>Price Monitor</h1>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Latest Prices</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Site</th>
+              <th>Price</th>
+              <th>Scraped At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in latest %}
+              <tr>
+                <td>
+                  <a href="/?product_id={{ row['product_id'] }}">{{ row['name'] or row['product_id'] }}</a>
+                  <div style="font-size:12px; color:#666;">{{ row['title'] or '' }}</div>
+                </td>
+                <td>{{ row['site'] }}</td>
+                <td>{{ row['currency'] or '' }} {{ row['price'] if row['price'] is not none else row['price_text'] }}</td>
+                <td style="font-size:12px; color:#666;">{{ row['scraped_at'] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>History{% if selected_product_id %}: {{ selected_product_id }}{% endif %}</h2>
+        {% if history %}
+          <canvas id="chart" height="90"></canvas>
+          <script>
+            const points = {{ history|tojson }};
+            const labels = points.map(p => p.scraped_at);
+            const data = points.map(p => p.price);
+
+            const ctx = document.getElementById('chart');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [{
+                  label: 'Price',
+                  data,
+                  borderWidth: 2,
+                  tension: 0.2,
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  x: { ticks: { maxTicksLimit: 6 } }
+                }
+              }
+            });
+          </script>
+        {% else %}
+          <div style="color:#666;">Select a product above to view its history.</div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
