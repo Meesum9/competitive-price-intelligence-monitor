@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} – Price Monitor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ product.name }}</h1>
+  <div class="page-actions">
+    <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-secondary">Edit</a>
+    <form method="post" action="{{ url_for('delete_product', product_id=product.id) }}" style="display:inline"
+          onsubmit="return confirm('Delete this product?')">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="info-grid">
+  <div class="info-card">
+    <span class="info-label">URL</span>
+    <a href="{{ product.url }}" target="_blank" rel="noopener">{{ product.url }}</a>
+  </div>
+  <div class="info-card">
+    <span class="info-label">CSS Selector</span>
+    <code>{{ product.selector }}</code>
+  </div>
+  <div class="info-card">
+    <span class="info-label">Added</span>
+    {{ product.created_at }}
+  </div>
+</div>
+
+<h2>Price History</h2>
+{% if history %}
+<div class="chart-wrapper">
+  <canvas id="priceChart"></canvas>
+</div>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Timestamp (UTC)</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in history %}
+    <tr>
+      <td>{{ row.scraped_at }}</td>
+      <td class="price">{{ "%.2f" | format(row.price) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+(function () {
+  var labels = {{ history | map(attribute='scraped_at') | list | tojson }};
+  var prices = {{ history | map(attribute='price') | list | tojson }};
+  // Reverse so oldest entry is on the left
+  labels = labels.slice().reverse();
+  prices = prices.slice().reverse();
+
+  var ctx = document.getElementById('priceChart').getContext('2d');
+
+  // Minimal inline chart using Canvas – no external library required
+  var W = ctx.canvas.parentElement.offsetWidth || 800;
+  ctx.canvas.width  = W;
+  ctx.canvas.height = 260;
+
+  if (prices.length < 2) {
+    ctx.fillStyle = '#888';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Not enough data to draw a chart (need ≥ 2 data points).', 20, 40);
+    return;
+  }
+
+  var pad = { top: 20, right: 20, bottom: 50, left: 60 };
+  var cW = W - pad.left - pad.right;
+  var cH = ctx.canvas.height - pad.top - pad.bottom;
+
+  var minP = Math.min.apply(null, prices);
+  var maxP = Math.max.apply(null, prices);
+  var range = maxP - minP || 1;
+
+  function xPos(i) { return pad.left + (i / (prices.length - 1)) * cW; }
+  function yPos(v) { return pad.top  + (1 - (v - minP) / range) * cH; }
+
+  // Grid lines
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var yg = pad.top + (g / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, yg); ctx.lineTo(pad.left + cW, yg); ctx.stroke();
+  }
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(xPos(0), yPos(prices[0]));
+  for (var i = 1; i < prices.length; i++) ctx.lineTo(xPos(i), yPos(prices[i]));
+  ctx.lineTo(xPos(prices.length - 1), pad.top + cH);
+  ctx.lineTo(xPos(0), pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(37,99,235,0.12)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 2;
+  ctx.moveTo(xPos(0), yPos(prices[0]));
+  for (var j = 1; j < prices.length; j++) ctx.lineTo(xPos(j), yPos(prices[j]));
+  ctx.stroke();
+
+  // Y-axis labels
+  ctx.fillStyle = '#555';
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'right';
+  for (var k = 0; k <= 4; k++) {
+    var val = minP + (k / 4) * range;
+    var yk = pad.top + (1 - k / 4) * cH;
+    ctx.fillText(val.toFixed(2), pad.left - 6, yk + 4);
+  }
+
+  // X-axis labels (first, middle, last)
+  ctx.textAlign = 'center';
+  var xIndices = [0, Math.floor(prices.length / 2), prices.length - 1];
+  xIndices.forEach(function (idx) {
+    ctx.fillText(labels[idx] ? labels[idx].slice(0, 16) : '', xPos(idx), pad.top + cH + 20);
+  });
+})();
+</script>
+{% else %}
+<p class="muted">No price data recorded yet. Run a scrape to populate history.</p>
+{% endif %}
+
+<h2>Alerts</h2>
+{% if alerts %}
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Triggered At (UTC)</th>
+      <th>Old Price</th>
+      <th>New Price</th>
+      <th>Change %</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in alerts %}
+    <tr class="{{ 'row-unread' if not a.acknowledged else '' }}">
+      <td>{{ a.triggered_at }}</td>
+      <td class="price">{{ "%.2f" | format(a.old_price) }}</td>
+      <td class="price {{ 'price-down' if a.new_price < a.old_price else 'price-up' }}">
+        {{ "%.2f" | format(a.new_price) }}
+      </td>
+      <td class="{{ 'price-down' if a.change_pct < 0 else 'price-up' }}">
+        {{ "%+.2f%%" | format(a.change_pct) }}
+      </td>
+      <td>
+        {% if a.acknowledged %}
+          <span class="badge badge-ok">Acknowledged</span>
+        {% else %}
+          <span class="badge badge-warn">New</span>
+          <form method="post" action="{{ url_for('acknowledge_alert', alert_id=a.id) }}" style="display:inline">
+            <button type="submit" class="btn btn-xs">Ack</button>
+          </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No alerts recorded for this product.</p>
+{% endif %}
+
+<p><a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Products</a></p>
+{% endblock %}

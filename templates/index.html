@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Products – Price Monitor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Monitored Products</h1>
+  <div class="page-actions">
+    <form method="post" action="{{ url_for('trigger_scrape') }}" style="display:inline">
+      <button type="submit" class="btn btn-secondary">🔄 Scrape Now</button>
+    </form>
+    <a href="{{ url_for('add_product') }}" class="btn btn-primary">+ Add Product</a>
+  </div>
+</div>
+
+{% if products %}
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Current Price</th>
+      <th>Change</th>
+      <th>URL</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+    <tr>
+      <td><a href="{{ url_for('product_detail', product_id=p.id) }}">{{ p.name }}</a></td>
+      <td class="price">
+        {% if p.latest_price is not none %}
+          {{ "%.2f" | format(p.latest_price) }}
+        {% else %}
+          <span class="muted">–</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if p.latest_price is not none and p.prev_price is not none %}
+          {% set diff = p.latest_price - p.prev_price %}
+          {% if diff < 0 %}
+            <span class="price-down">▼ {{ "%.2f" | format(diff | abs) }}</span>
+          {% elif diff > 0 %}
+            <span class="price-up">▲ {{ "%.2f" | format(diff) }}</span>
+          {% else %}
+            <span class="muted">–</span>
+          {% endif %}
+        {% else %}
+          <span class="muted">–</span>
+        {% endif %}
+      </td>
+      <td><a href="{{ p.url }}" target="_blank" rel="noopener" class="muted small">{{ p.url | truncate(50) }}</a></td>
+      <td class="actions">
+        <a href="{{ url_for('product_detail', product_id=p.id) }}" class="btn btn-xs">View</a>
+        <a href="{{ url_for('edit_product', product_id=p.id) }}" class="btn btn-xs btn-secondary">Edit</a>
+        <form method="post" action="{{ url_for('delete_product', product_id=p.id) }}" style="display:inline"
+              onsubmit="return confirm('Delete {{ p.name }}?')">
+          <button type="submit" class="btn btn-xs btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+  <p>No products are being monitored yet.</p>
+  <a href="{{ url_for('add_product') }}" class="btn btn-primary">Add your first product</a>
+</div>
+{% endif %}
+{% endblock %}

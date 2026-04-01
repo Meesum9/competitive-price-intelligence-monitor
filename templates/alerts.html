@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Alerts – Price Monitor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Price Alerts</h1>
+  {% if alerts %}
+  <div class="page-actions">
+    <form method="post" action="{{ url_for('acknowledge_all') }}">
+      <button type="submit" class="btn btn-secondary">✓ Acknowledge All</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if alerts %}
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Triggered At (UTC)</th>
+      <th>Old Price</th>
+      <th>New Price</th>
+      <th>Change %</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in alerts %}
+    <tr class="{{ 'row-unread' if not a.acknowledged else '' }}">
+      <td><a href="{{ url_for('product_detail', product_id=a.product_id) }}">{{ a.product_name }}</a></td>
+      <td>{{ a.triggered_at }}</td>
+      <td class="price">{{ "%.2f" | format(a.old_price) }}</td>
+      <td class="price {{ 'price-down' if a.new_price < a.old_price else 'price-up' }}">
+        {{ "%.2f" | format(a.new_price) }}
+      </td>
+      <td class="{{ 'price-down' if a.change_pct < 0 else 'price-up' }}">
+        {{ "%+.2f%%" | format(a.change_pct) }}
+      </td>
+      <td>
+        {% if a.acknowledged %}
+          <span class="badge badge-ok">Acknowledged</span>
+        {% else %}
+          <span class="badge badge-warn">New</span>
+          <form method="post" action="{{ url_for('acknowledge_alert', alert_id=a.id) }}" style="display:inline">
+            <button type="submit" class="btn btn-xs">Ack</button>
+          </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+  <p>No alerts have been triggered yet.</p>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Products</a>
+</div>
+{% endif %}
+{% endblock %}

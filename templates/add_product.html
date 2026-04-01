@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Add Product – Price Monitor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Add Product</h1>
+</div>
+
+<form method="post" class="product-form">
+  <div class="form-group">
+    <label for="name">Product Name</label>
+    <input type="text" id="name" name="name" placeholder="e.g. Logitech MX Master 3" required />
+  </div>
+  <div class="form-group">
+    <label for="url">Product Page URL</label>
+    <input type="url" id="url" name="url" placeholder="https://example.com/product/123" required />
+  </div>
+  <div class="form-group">
+    <label for="selector">CSS Price Selector</label>
+    <input type="text" id="selector" name="selector" placeholder='e.g. span.price, [itemprop="price"]' required />
+    <small class="hint">A CSS selector that uniquely targets the element containing the price text.</small>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Add Product</button>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

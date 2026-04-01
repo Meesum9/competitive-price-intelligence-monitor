@@ -1,0 +1,229 @@
+/* ============================================================
+   Price Intelligence Monitor – Stylesheet
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:    #2563eb;
+  --blue-lt: #dbeafe;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --amber:   #d97706;
+  --gray-1:  #f9fafb;
+  --gray-2:  #f3f4f6;
+  --gray-3:  #e5e7eb;
+  --gray-5:  #6b7280;
+  --gray-9:  #111827;
+  --radius:  6px;
+  --shadow:  0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  color: var(--gray-9);
+  background: var(--gray-1);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Navbar ---- */
+.navbar {
+  background: var(--blue);
+  color: #fff;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: 54px;
+  box-shadow: var(--shadow);
+}
+.navbar .brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 1.25rem;
+}
+.nav-links a {
+  color: rgba(255,255,255,.85);
+  text-decoration: none;
+  font-size: .92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  transition: color .15s;
+}
+.nav-links a:hover { color: #fff; }
+
+/* ---- Container ---- */
+.container { flex: 1; max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; width: 100%; }
+
+/* ---- Page header ---- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.page-header h1 { font-size: 1.4rem; }
+.page-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ---- Flash messages ---- */
+.flash-messages { margin-bottom: 1rem; }
+.flash {
+  padding: .65rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: .4rem;
+  font-size: .9rem;
+}
+.flash-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.flash-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.flash-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.flash-warning { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .45rem .9rem;
+  font-size: .88rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter .15s;
+  background: var(--blue);
+  color: #fff;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn-primary   { background: var(--blue);  color: #fff; }
+.btn-secondary { background: var(--gray-3); color: var(--gray-9); }
+.btn-danger    { background: var(--red);   color: #fff; }
+.btn-xs { padding: .25rem .55rem; font-size: .8rem; }
+
+/* ---- Tables ---- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.data-table thead { background: var(--gray-2); }
+.data-table th, .data-table td {
+  padding: .65rem .9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--gray-3);
+  font-size: .88rem;
+}
+.data-table th { font-weight: 600; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--gray-1); }
+.row-unread td { background: #fffbeb; }
+
+/* ---- Price colours ---- */
+.price       { font-variant-numeric: tabular-nums; }
+.price-down  { color: var(--green); font-weight: 600; }
+.price-up    { color: var(--red);   font-weight: 600; }
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-block;
+  padding: .15rem .45rem;
+  border-radius: 9999px;
+  font-size: .75rem;
+  font-weight: 700;
+  background: var(--red);
+  color: #fff;
+  vertical-align: middle;
+}
+.badge-ok   { background: var(--green); }
+.badge-warn { background: var(--amber); }
+
+/* ---- Info grid (product detail) ---- */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.info-card {
+  background: #fff;
+  border: 1px solid var(--gray-3);
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  font-size: .88rem;
+  word-break: break-all;
+}
+.info-label { display: block; font-weight: 600; color: var(--gray-5); margin-bottom: .2rem; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ---- Chart ---- */
+.chart-wrapper {
+  background: #fff;
+  border: 1px solid var(--gray-3);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+#priceChart { display: block; width: 100%; }
+
+/* ---- Forms ---- */
+.product-form {
+  background: #fff;
+  border: 1px solid var(--gray-3);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  max-width: 580px;
+}
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-weight: 600; margin-bottom: .35rem; font-size: .9rem; }
+.form-group input[type="text"],
+.form-group input[type="url"] {
+  width: 100%;
+  padding: .5rem .75rem;
+  border: 1px solid var(--gray-3);
+  border-radius: var(--radius);
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .15s;
+}
+.form-group input:focus { border-color: var(--blue); }
+.hint { color: var(--gray-5); font-size: .8rem; margin-top: .3rem; display: block; }
+.form-actions { display: flex; gap: .5rem; margin-top: 1.25rem; }
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--gray-5);
+}
+.empty-state p { margin-bottom: 1rem; }
+
+/* ---- Utility ---- */
+.muted  { color: var(--gray-5); }
+.small  { font-size: .8rem; }
+h2 { font-size: 1.1rem; margin: 1.25rem 0 .6rem; }
+
+/* ---- Footer ---- */
+.footer {
+  text-align: center;
+  padding: .75rem;
+  font-size: .8rem;
+  color: var(--gray-5);
+  border-top: 1px solid var(--gray-3);
+}

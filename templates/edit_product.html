@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ product.name }} – Price Monitor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Edit Product</h1>
+</div>
+
+<form method="post" class="product-form">
+  <div class="form-group">
+    <label for="name">Product Name</label>
+    <input type="text" id="name" name="name" value="{{ product.name }}" required />
+  </div>
+  <div class="form-group">
+    <label for="url">Product Page URL</label>
+    <input type="url" id="url" name="url" value="{{ product.url }}" required />
+  </div>
+  <div class="form-group">
+    <label for="selector">CSS Price Selector</label>
+    <input type="text" id="selector" name="selector" value="{{ product.selector }}" required />
+    <small class="hint">A CSS selector that uniquely targets the element containing the price text.</small>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
